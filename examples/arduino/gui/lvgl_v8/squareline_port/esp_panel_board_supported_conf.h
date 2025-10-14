@@ -164,6 +164,13 @@
 // #define BOARD_VIEWE_UEDX80480050E_WB_A_2
 // #define BOARD_VIEWE_UEDX80480070E_WB_A
 
+/*
+ * Wireless-Tag (https://www.wireless-tag.com/):
+ *
+ *  -BOARD_WIRELESSTAG_WTP4C5MP07S (WTP4C5MP07S): https://shop.wireless-tag.com/products/7inch-lcd-touch-screen-1024x600-mipi-smart-displays-wtp4c5mp07s-esp32-lcd-board-used-with-esp32-p4-and-esp32-c5-dev-board
+ */
+// #define BOARD_WIRELESSTAG_WTP4C5MP07S
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////// File Version ///////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -175,7 +182,7 @@
  * 3. Patch version mismatch: No impact on functionality
  */
 #define ESP_PANEL_BOARD_SUPPORTED_FILE_VERSION_MAJOR 1
-#define ESP_PANEL_BOARD_SUPPORTED_FILE_VERSION_MINOR 2
+#define ESP_PANEL_BOARD_SUPPORTED_FILE_VERSION_MINOR 3
 #define ESP_PANEL_BOARD_SUPPORTED_FILE_VERSION_PATCH 0
 
 #endif

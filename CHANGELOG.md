@@ -1,5 +1,16 @@
 # ChangeLog
 
+## v1.0.5 - 2025-10-14
+
+### Enhancements:
+
+* feat(board): add support for Wireless-Tag WTP4C5MP07S @lyusupov (#244)
+* feat(touch): add touch controller GSL3680 @DejanBukovec (#212)
+
+### Bugfixes:
+
+* fix(touch): fix reset issue @skyluke86 (#242)
+
 ## v1.0.4 - 2025-09-19
 
 ### Enhancements:
