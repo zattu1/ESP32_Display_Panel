@@ -6,6 +6,10 @@
 
 * feat(board): add support for Wireless-Tag WTP4C5MP07S @lyusupov (#244)
 
+### Bugfixes:
+
+* fix(touch): fix reset issue @skyluke86 (#242)
+
 ## v1.0.4 - 2025-09-19
 
 ### Enhancements:
