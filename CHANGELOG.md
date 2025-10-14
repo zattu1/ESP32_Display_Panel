@@ -5,6 +5,7 @@
 ### Enhancements:
 
 * feat(board): add support for Wireless-Tag WTP4C5MP07S @lyusupov (#244)
+* feat(touch): add touch controller GSL3680 @DejanBukovec (#212)
 
 ### Bugfixes:
 

@@ -12,7 +12,7 @@
 
 /* File `esp_panel_drivers_conf.h` */
 #define ESP_PANEL_DRIVERS_CONF_VERSION_MAJOR 1
-#define ESP_PANEL_DRIVERS_CONF_VERSION_MINOR 1
+#define ESP_PANEL_DRIVERS_CONF_VERSION_MINOR 2
 #define ESP_PANEL_DRIVERS_CONF_VERSION_PATCH 0
 
 /* File `esp_panel_board_custom_conf.h` */

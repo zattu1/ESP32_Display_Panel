@@ -86,4 +86,3 @@ public:
  */
 using ESP_PanelTouch_GTSL3680 [[deprecated("Use `esp_panel::drivers::TouchGSL3680` instead")]] =
     esp_panel::drivers::TouchGSL3680;
-    

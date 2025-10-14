@@ -20,6 +20,7 @@
 #include "esp_lcd_touch.h"
 #include "esp_lcd_touch_gsl3680.h"
 #include "utils/esp_panel_utils_log.h"
+#include "esp_lcd_touch_gsl3680_fw.h"
 
 static const char *TAG = "GSL3680";
 
@@ -35,99 +36,98 @@ static const char *TAG = "GSL3680";
 #define ESP_GSL3680_TOUCH_MAX_BUTTONS         (9)
 //#define ESP_GSL3680_TOUCH_MAX_BUTTONS    CONFIG_ESP_LCD_TOUCH_MAX_POINTS
 
-unsigned int gsl_config_data_id[] =
-{
-	0xccb69a,  
-	0x200,
-	0,0,
-	0,
-	0,0,0,
-	0,0,0,0,0,0,0,0x1cc86fd6,
+unsigned int gsl_config_data_id[] = {
+    0xccb69a,
+    0x200,
+    0, 0,
+    0,
+    0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0x1cc86fd6,
 
 
-	0x40000d00,0xa,0xe001a,0xe001a,0x3200500,0,0x5100,0x8e00,
-	0,0x320014,0,0x14,0,0,0,0,
-	0x8,0x4000,0x1000,0x10170002,0x10110000,0,0,0x4040404,
-	0x1b6db688,0x64,0xb3000f,0xad0019,0xa60023,0xa0002d,0xb3000f,0xad0019,
-	0xa60023,0xa0002d,0xb3000f,0xad0019,0xa60023,0xa0002d,0xb3000f,0xad0019,
-	0xa60023,0xa0002d,0x804000,0x90040,0x90001,0,0,0,
-	0,0,0,0x14012c,0xa003c,0xa0078,0x400,0x1081,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
+    0x40000d00, 0xa, 0xe001a, 0xe001a, 0x3200500, 0, 0x5100, 0x8e00,
+    0, 0x320014, 0, 0x14, 0, 0, 0, 0,
+    0x8, 0x4000, 0x1000, 0x10170002, 0x10110000, 0, 0, 0x4040404,
+    0x1b6db688, 0x64, 0xb3000f, 0xad0019, 0xa60023, 0xa0002d, 0xb3000f, 0xad0019,
+    0xa60023, 0xa0002d, 0xb3000f, 0xad0019, 0xa60023, 0xa0002d, 0xb3000f, 0xad0019,
+    0xa60023, 0xa0002d, 0x804000, 0x90040, 0x90001, 0, 0, 0,
+    0, 0, 0, 0x14012c, 0xa003c, 0xa0078, 0x400, 0x1081,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
 
-	0,//key_map
-	0x3200384,0x64,0x503e8,//0
-	0,0,0,//1
-	0,0,0,//2
-	0,0,0,//3
-	0,0,0,//4
-	0,0,0,//5
-	0,0,0,//6
-	0,0,0,//7
+    0,//key_map
+    0x3200384, 0x64, 0x503e8, //0
+    0, 0, 0, //1
+    0, 0, 0, //2
+    0, 0, 0, //3
+    0, 0, 0, //4
+    0, 0, 0, //5
+    0, 0, 0, //6
+    0, 0, 0, //7
 
-	0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-
-
-	0x220,
-	0,0,0,0,0,0,0,0,
-	0x10203,0x4050607,0x8090a0b,0xc0d0e0f,0x10111213,0x14151617,0x18191a1b,0x1c1d1e1f,
-	0x20212223,0x24252627,0x28292a2b,0x2c2d2e2f,0x30313233,0x34353637,0x38393a3b,0x3c3d3e3f,
-	0x10203,0x4050607,0x8090a0b,0xc0d0e0f,0x10111213,0x14151617,0x18191a1b,0x1c1d1e1f,
-	0x20212223,0x24252627,0x28292a2b,0x2c2d2e2f,0x30313233,0x34353637,0x38393a3b,0x3c3d3e3f,
-
-	0x10203,0x4050607,0x8090a0b,0xc0d0e0f,0x10111213,0x14151617,0x18191a1b,0x1c1d1e1f,
-	0x20212223,0x24252627,0x28292a2b,0x2c2d2e2f,0x30313233,0x34353637,0x38393a3b,0x3c3d3e3f,
-
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-
-	0x10203,0x4050607,0x8090a0b,0xc0d0e0f,0x10111213,0x14151617,0x18191a1b,0x1c1d1e1f,
-	0x20212223,0x24252627,0x28292a2b,0x2c2d2e2f,0x30313233,0x34353637,0x38393a3b,0x3c3d3e3f,
-
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,
+    0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
 
 
-	0x3,
-	0x101,0,0x100,0,
-	0x20,0x10,0x8,0x4,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
+    0x220,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0x10203, 0x4050607, 0x8090a0b, 0xc0d0e0f, 0x10111213, 0x14151617, 0x18191a1b, 0x1c1d1e1f,
+    0x20212223, 0x24252627, 0x28292a2b, 0x2c2d2e2f, 0x30313233, 0x34353637, 0x38393a3b, 0x3c3d3e3f,
+    0x10203, 0x4050607, 0x8090a0b, 0xc0d0e0f, 0x10111213, 0x14151617, 0x18191a1b, 0x1c1d1e1f,
+    0x20212223, 0x24252627, 0x28292a2b, 0x2c2d2e2f, 0x30313233, 0x34353637, 0x38393a3b, 0x3c3d3e3f,
 
-	0x4,0,0,0,0,0,0,0,
-	0x3800680,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,
+    0x10203, 0x4050607, 0x8090a0b, 0xc0d0e0f, 0x10111213, 0x14151617, 0x18191a1b, 0x1c1d1e1f,
+    0x20212223, 0x24252627, 0x28292a2b, 0x2c2d2e2f, 0x30313233, 0x34353637, 0x38393a3b, 0x3c3d3e3f,
+
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+
+    0x10203, 0x4050607, 0x8090a0b, 0xc0d0e0f, 0x10111213, 0x14151617, 0x18191a1b, 0x1c1d1e1f,
+    0x20212223, 0x24252627, 0x28292a2b, 0x2c2d2e2f, 0x30313233, 0x34353637, 0x38393a3b, 0x3c3d3e3f,
+
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0,
+
+
+    0x3,
+    0x101, 0, 0x100, 0,
+    0x20, 0x10, 0x8, 0x4,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+
+    0x4, 0, 0, 0, 0, 0, 0, 0,
+    0x3800680, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0,
 };
 
 /*******************************************************************************
@@ -226,7 +226,7 @@ esp_err_t esp_lcd_touch_new_i2c_gsl3680(const esp_lcd_panel_io_handle_t io, cons
 
         /* Select I2C addr, set output high or low */
         uint32_t gpio_level = 0;
-   
+
         ESP_RETURN_ON_ERROR(gpio_set_level(esp_lcd_touch_gsl3680->config.int_gpio_num, gpio_level), TAG, "GPIO set level error!");
         vTaskDelay(pdMS_TO_TICKS(1));
 
@@ -242,11 +242,11 @@ esp_err_t esp_lcd_touch_new_i2c_gsl3680(const esp_lcd_panel_io_handle_t io, cons
     }
 
     /* Read status and config info */
-    ESP_LOGI(TAG,"init GSL3680");
+    ESP_LOGI(TAG, "init GSL3680");
     touch_gsl3680_read_cfg(esp_lcd_touch_gsl3680);
     esp_lcd_touch_gsl3680_init(esp_lcd_touch_gsl3680);
     ret = esp_lcd_touch_gsl3680_read_ram_fw(esp_lcd_touch_gsl3680);
-    
+
     /* Prepare pin for touch interrupt */
     if (esp_lcd_touch_gsl3680->config.int_gpio_num != GPIO_NUM_NC) {
         const gpio_config_t int_gpio_config = {
@@ -292,7 +292,6 @@ static esp_err_t esp_lcd_touch_gsl3680_enter_sleep(esp_lcd_touch_handle_t tp)
 
 static esp_err_t esp_lcd_touch_gsl3680_exit_sleep(esp_lcd_touch_handle_t tp)
 {
-    esp_err_t ret;
     ESP_RETURN_ON_ERROR(gpio_set_level(tp->config.rst_gpio_num, 1), TAG, "High GPIO config failed!");
     vTaskDelay(pdMS_TO_TICKS(20));
 
@@ -318,39 +317,39 @@ static esp_err_t esp_lcd_touch_gsl3680_read_data(esp_lcd_touch_handle_t tp)
     if (touch_cnt == 0 || touch_cnt > CONFIG_ESP_LCD_TOUCH_MAX_POINTS) {
         return ESP_OK;
     }
-/*
-    uint16_t x_point = ((touch_data[7]&0x0f)<<8 )|touch_data[6];
-	uint16_t y_point = (touch_data[5]<<8)|touch_data[4];
-	uint16_t x2_point = ((touch_data[11]&0x0f)<<8 )|touch_data[10];
-	uint16_t y2_point = (touch_data[9]<<8)|touch_data[8];
+    /*
+        uint16_t x_point = ((touch_data[7]&0x0f)<<8 )|touch_data[6];
+        uint16_t y_point = (touch_data[5]<<8)|touch_data[4];
+        uint16_t x2_point = ((touch_data[11]&0x0f)<<8 )|touch_data[10];
+        uint16_t y2_point = (touch_data[9]<<8)|touch_data[8];
 
-    portENTER_CRITICAL(&tp->data.lock);
-    tp->data.points = touch_cnt;
+        portENTER_CRITICAL(&tp->data.lock);
+        tp->data.points = touch_cnt;
 
-    tp->data.coords[0].x = x_point;
-    tp->data.coords[0].y = y_point;
-    tp->data.coords[1].strength = 0;
+        tp->data.coords[0].x = x_point;
+        tp->data.coords[0].y = y_point;
+        tp->data.coords[1].strength = 0;
 
-    tp->data.coords[1].x = x2_point;
-    tp->data.coords[1].y = y2_point;
-    tp->data.coords[1].strength = 0;
+        tp->data.coords[1].x = x2_point;
+        tp->data.coords[1].y = y2_point;
+        tp->data.coords[1].strength = 0;
 
-    portEXIT_CRITICAL(&tp->data.lock);
+        portEXIT_CRITICAL(&tp->data.lock);
 
-    uint8_t buf[4] = {0};
-    uint8 addr = 0xf0;
-    buf[0]=0xa;buf[1]=0;buf[2]=0;buf[3]=0;
-    touch_gsl3680_i2c_write(tp,addr, buf, 4);
-    addr = 0x8;
-    buf[0]=(uint8)(0xffffffff & 0xff);
-    buf[1]=(uint8)((0xffffffff>>8) & 0xff);
-    buf[2]=(uint8)((0xffffffff>>16) & 0xff);
-    buf[3]=(uint8)((0xffffffff>>24) & 0xff);
-    //SCI_TRACE_LOW("tmp1=%08x,buf[0]=%02x,buf[1]=%02x,buf[2]=%02x,buf[3]=%02x\n", tmp1,buf[0],buf[1],buf[2],buf[3]);
-    touch_gsl3680_i2c_write(tp,addr, buf, 4);
+        uint8_t buf[4] = {0};
+        uint8 addr = 0xf0;
+        buf[0]=0xa;buf[1]=0;buf[2]=0;buf[3]=0;
+        touch_gsl3680_i2c_write(tp,addr, buf, 4);
+        addr = 0x8;
+        buf[0]=(uint8)(0xffffffff & 0xff);
+        buf[1]=(uint8)((0xffffffff>>8) & 0xff);
+        buf[2]=(uint8)((0xffffffff>>16) & 0xff);
+        buf[3]=(uint8)((0xffffffff>>24) & 0xff);
+        //SCI_TRACE_LOW("tmp1=%08x,buf[0]=%02x,buf[1]=%02x,buf[2]=%02x,buf[3]=%02x\n", tmp1,buf[0],buf[1],buf[2],buf[3]);
+        touch_gsl3680_i2c_write(tp,addr, buf, 4);
 
-    return ESP_OK;
-*/
+        return ESP_OK;
+    */
 
 
     portENTER_CRITICAL(&tp->data.lock);
@@ -367,8 +366,12 @@ static esp_err_t esp_lcd_touch_gsl3680_read_data(esp_lcd_touch_handle_t tp)
         uint16_t y = (raw_y * tp->config.x_max) / RAW_MAX_Y;
 
         // Clamp to avoid overflow
-        if (x >= tp->config.y_max) x = tp->config.y_max - 1;
-        if (y >= tp->config.x_max) y = tp->config.x_max - 1;
+        if (x >= tp->config.y_max) {
+            x = tp->config.y_max - 1;
+        }
+        if (y >= tp->config.x_max) {
+            y = tp->config.x_max - 1;
+        }
 
         tp->data.coords[i].x = x;
         tp->data.coords[i].y = y;
@@ -494,15 +497,15 @@ static esp_err_t touch_gsl3680_reset(esp_lcd_touch_handle_t tp)
     vTaskDelay(pdMS_TO_TICKS(10));
 
     addr = 0xe4;
-    write_buf[0]=0x04;
+    write_buf[0] = 0x04;
     err = touch_gsl3680_i2c_write(tp, addr, write_buf, 1);
     ESP_RETURN_ON_ERROR(err, TAG, "I2C write error!");
     vTaskDelay(pdMS_TO_TICKS(10));
 
-    write_buf[0] =0x00;
-    write_buf[1] =0x00;
-    write_buf[2] =0x00;
-    write_buf[3] =0x00;
+    write_buf[0] = 0x00;
+    write_buf[1] = 0x00;
+    write_buf[2] = 0x00;
+    write_buf[3] = 0x00;
     err = touch_gsl3680_i2c_write(tp, 0xbc, write_buf, 4);
     ESP_RETURN_ON_ERROR(err, TAG, "I2C write error!");
 
@@ -515,9 +518,8 @@ static esp_err_t touch_gsl3680_read_cfg(esp_lcd_touch_handle_t tp)
 {
     uint8_t buf[4];
     uint8_t write[4];
-    uint8_t i2c_buffer_read = 0;
-    uint8_t i2c_buffer_write = 0x12;
-    esp_err_t ret = ESP_OK;
+    // uint8_t i2c_buffer_read = 0;
+    // uint8_t i2c_buffer_write = 0x12;
 
     write[0] = 0x12;
     write[1] = 0x34;
@@ -535,6 +537,8 @@ static esp_err_t touch_gsl3680_read_cfg(esp_lcd_touch_handle_t tp)
     ESP_RETURN_ON_ERROR(touch_gsl3680_i2c_read(tp, 0xf0, (uint8_t *)&buf, 4), TAG, "I2C read error!");
     ESP_LOGI(TAG, "GSL3680 read reg 0xf0 after is %x %x %x %x", buf[0], buf[1], buf[2], buf[3]);
 
+    return ESP_OK;
+
     //TODO: Check this fix
     /*
     if(i2c_buffer_read == i2c_buffer_write)
@@ -542,10 +546,10 @@ static esp_err_t touch_gsl3680_read_cfg(esp_lcd_touch_handle_t tp)
         ret = ESP_OK;
         ESP_LOGI(TAG, "Read config success");
     }
-    else 
+    else
         ret = ESP_FAIL;*/
 
-    return ret;
+    // return ret;
 }
 
 static esp_err_t esp_lcd_touch_gsl3680_startup_chip(esp_lcd_touch_handle_t tp)
@@ -555,7 +559,7 @@ static esp_err_t esp_lcd_touch_gsl3680_startup_chip(esp_lcd_touch_handle_t tp)
     uint8_t addr = 0xe0;
     write_buf[0] = 0x00;
     ESP_LOGI(TAG, "enter");
-    ESP_RETURN_ON_ERROR(touch_gsl3680_i2c_write(tp,addr,write_buf,1), TAG, "I2C write error");
+    ESP_RETURN_ON_ERROR(touch_gsl3680_i2c_write(tp, addr, write_buf, 1), TAG, "I2C write error");
     vTaskDelay(pdMS_TO_TICKS(10));
 
     //TODO: gsl_DataInit(gsl_config_data_id);
@@ -570,8 +574,7 @@ static esp_err_t esp_lcd_touch_gsl3680_read_ram_fw(esp_lcd_touch_handle_t tp)
     vTaskDelay(pdMS_TO_TICKS(30));
     ESP_RETURN_ON_ERROR(touch_gsl3680_i2c_read(tp, addr, (uint8_t *)&read_buf, 4), TAG, "I2C read error!");
     ESP_LOGI(TAG, "GSL3680 startup_chip failed read 0xb0 = %x,%x,%x,%x ", read_buf[3], read_buf[2], read_buf[1], read_buf[0]);
-    if(read_buf[3] != 0x5a || read_buf[2] != 0x5a || read_buf[1] != 0x5a || read_buf[0] != 0x5a)
-    {
+    if (read_buf[3] != 0x5a || read_buf[2] != 0x5a || read_buf[1] != 0x5a || read_buf[0] != 0x5a) {
         return ESP_FAIL;
     }
     return ESP_OK;
@@ -604,18 +607,18 @@ static esp_err_t esp_lcd_touch_gsl3680_load_fw(esp_lcd_touch_handle_t tp)
     uint16_t source_line = 0;
     uint16_t source_len = sizeof(GSLX680_FW) / sizeof(struct fw_data);
 
-    for(source_line=0; source_line<source_len; source_line++)
-    {
+    for (source_line = 0; source_line < source_len; source_line++) {
         addr = GSLX680_FW[source_line].offset;
         wrbuf[0] = (uint8_t)(GSLX680_FW[source_line].val & 0x000000ff);
         wrbuf[1] = (uint8_t)((GSLX680_FW[source_line].val & 0x0000ff00) >> 8);
         wrbuf[2] = (uint8_t)((GSLX680_FW[source_line].val & 0x00ff0000) >> 16);
         wrbuf[3] = (uint8_t)((GSLX680_FW[source_line].val & 0xff000000) >> 24);
-        if(addr == 0xf0)
+        if (addr == 0xf0) {
             touch_gsl3680_i2c_write(tp, addr, wrbuf, 1);
-        else
+        } else {
             touch_gsl3680_i2c_write(tp, addr, wrbuf, 4);
-        
+        }
+
     }
     ESP_LOGI(TAG, "load fw success");
     return ESP_OK;
