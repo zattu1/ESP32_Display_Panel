@@ -7,6 +7,13 @@
 #include "utils/esp_panel_utils_log.h"
 #include "esp_panel_host_i2c.hpp"
 
+// Arduino-ESP32 driver_ng I2C HAL symbols (provided by esp32-hal-i2c-ng.c)
+extern "C" {
+bool i2cInit(uint8_t i2c_num, int sda, int scl, uint32_t frequency);
+bool i2cDeinit(uint8_t i2c_num);
+void *i2cBusHandle(uint8_t i2c_num);
+}
+
 namespace esp_panel::drivers {
 
 HostI2C::~HostI2C()
@@ -15,11 +22,10 @@ HostI2C::~HostI2C()
 
     if (isOverState(State::BEGIN)) {
         int id = getID();
-        ESP_UTILS_CHECK_ERROR_EXIT(
-            i2c_driver_delete(static_cast<i2c_port_t>(id)), "Delete I2C host(%d) failed", id
-        );
-        ESP_UTILS_LOGD("Delete I2C host(%d)", id);
-
+        if (owns_bus) {
+            (void)i2cDeinit(static_cast<uint8_t>(id));
+            ESP_UTILS_LOGD("Deinit I2C host(%d) via driver_ng", id);
+        }
         setState(State::DEINIT);
     }
 
@@ -36,14 +42,35 @@ bool HostI2C::begin()
 
     {
         int id = getID();
-        ESP_UTILS_CHECK_ERROR_RETURN(
-            i2c_param_config(static_cast<i2c_port_t>(id), &config), false, "I2C param config failed"
-        );
-        ESP_UTILS_CHECK_ERROR_RETURN(
-            i2c_driver_install(static_cast<i2c_port_t>(id), config.mode, 0, 0, 0), false, "I2C driver install failed"
-        );
-        ESP_UTILS_LOGD("Initialize I2C host(%d)", id);
+        owns_bus = false;
+        const uint8_t port = static_cast<uint8_t>(id);
+        const int sda = config.sda_io_num;
+        const int scl = config.scl_io_num;
+        const uint32_t freq = config.master.clk_speed;
+
+        bool ok = i2cInit(port, sda, scl, freq);
+        if (!ok) {
+            // If another component already initialized the bus, Arduino may report failure
+            // but still provide a valid bus handle.
+            host_handle = i2cBusHandle(port);
+            if (host_handle != nullptr) {
+                ESP_UTILS_LOGW("I2C init reported failure, but bus handle exists; continue (host=%d)", id);
+                goto host_ready;
+            }
+
+            // Retry once after deinit to recover from stale state.
+            (void)i2cDeinit(port);
+            ok = i2cInit(port, sda, scl, freq);
+            ESP_UTILS_CHECK_FALSE_RETURN(ok, false, "I2C init (driver_ng) failed");
+        }
+
+        host_handle = i2cBusHandle(port);
+        ESP_UTILS_CHECK_FALSE_RETURN(host_handle != nullptr, false, "I2C bus handle is null");
+        owns_bus = true;
+        ESP_UTILS_LOGD("Initialize I2C host(%d) via driver_ng", id);
     }
+
+host_ready:
 
     setState(State::BEGIN);
 

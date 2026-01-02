@@ -9,10 +9,46 @@
 
 #include "inttypes.h"
 #include "utils/esp_panel_utils_log.h"
+#include "driver/i2c_master.h"
+#include "esp_idf_version.h"
+#include "esp_lcd_panel_io.h"
 #include "drivers/host/esp_panel_host_i2c.hpp"
 #include "esp_panel_bus_i2c.hpp"
 
+// Arduino-ESP32 driver_ng I2C HAL symbol to obtain the created bus handle
+extern "C" void *i2cBusHandle(uint8_t i2c_num);
+
+// Use ESP-IDF's v2 I2C panel IO (driver_ng). This avoids pulling in the v1 (legacy) implementation.
+#ifdef __cplusplus
+extern "C" {
+#endif
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
+esp_err_t esp_lcd_new_panel_io_i2c_v2(i2c_master_bus_handle_t bus,
+                                     const esp_lcd_panel_io_i2c_config_t *io_config,
+                                     esp_lcd_panel_io_handle_t *ret_io);
+#endif
+#ifdef __cplusplus
+}
+#endif
+
 namespace esp_panel::drivers {
+
+namespace {
+
+// Some ESP-IDF versions add new fields (e.g. `scl_speed_hz`) into
+// `esp_lcd_panel_io_i2c_config_t`. Use SFINAE so we can populate them when
+// available, while keeping compatibility with older headers.
+template <typename T>
+static auto maybe_set_scl_speed_hz(T &cfg, uint32_t hz) -> decltype((void)cfg.scl_speed_hz, void())
+{
+    cfg.scl_speed_hz = hz;
+}
+
+static void maybe_set_scl_speed_hz(...)
+{
+}
+
+} // namespace
 
 void BusI2C::Config::convertPartialToFull()
 {
@@ -306,20 +342,37 @@ bool BusI2C::begin()
         ESP_UTILS_LOGD("Begin I2C host(%d)", host_id);
     }
 
-    // Create the control panel
-#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 2, 0)
+    i2c_master_bus_handle_t bus_handle = NULL;
+    if (_host != nullptr) {
+        bus_handle = reinterpret_cast<i2c_master_bus_handle_t>(_host->getHandle());
+    } else {
+        bus_handle = reinterpret_cast<i2c_master_bus_handle_t>(i2cBusHandle(static_cast<uint8_t>(host_id)));
+    }
+    ESP_UTILS_CHECK_FALSE_RETURN(bus_handle != NULL, false, "I2C bus(%d) not initialized", host_id);
+
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
+    // IDF v5.5+ uses driver_ng and adds the I2C device via i2c_master_bus_add_device().
+    // Some versions require a valid per-device SCL speed in the IO config; if the field
+    // exists, set it from the host clock speed to avoid ESP_ERR_INVALID_ARG.
+    auto control_panel_cfg = getControlPanelFullConfig();
+    uint32_t bus_clk_hz = 0;
+    if (!isHostSkipInit()) {
+        bus_clk_hz = getHostFullConfig().master.clk_speed;
+    }
+    if (bus_clk_hz != 0) {
+        maybe_set_scl_speed_hz(control_panel_cfg, bus_clk_hz);
+    }
     ESP_UTILS_CHECK_ERROR_RETURN(
-        esp_lcd_new_panel_io_i2c(
-            reinterpret_cast<esp_lcd_i2c_bus_handle_t>(host_id), &getControlPanelFullConfig(), &control_panel
-        ), false, "create control panel failed"
+        esp_lcd_new_panel_io_i2c_v2(bus_handle, &control_panel_cfg, &control_panel),
+        false, "create control panel failed"
     );
 #else
+    // Older IDF/Arduino cores don't provide the v2 API; use the standard esp_lcd_new_panel_io_i2c().
     ESP_UTILS_CHECK_ERROR_RETURN(
-        esp_lcd_new_panel_io_i2c_v1(
-            static_cast<esp_lcd_i2c_bus_handle_t>(host_id), &getControlPanelFullConfig(), &control_panel
-        ), false, "create control panel failed"
+        esp_lcd_new_panel_io_i2c(bus_handle, &getControlPanelFullConfig(), &control_panel),
+        false, "create control panel failed"
     );
-#endif // ESP_IDF_VERSION
+#endif
     ESP_UTILS_LOGD("Create control panel @%p", control_panel);
 
     setState(State::BEGIN);

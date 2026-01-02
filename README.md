@@ -1,8 +1,8 @@
 [![Arduino Lint](https://github.com/esp-arduino-libs/ESP32_Display_Panel/actions/workflows/arduino_lint.yml/badge.svg)](https://github.com/esp-arduino-libs/ESP32_Display_Panel/actions/workflows/arduino_lint.yml) [![Version Consistency](https://github.com/esp-arduino-libs/ESP32_Display_Panel/actions/workflows/check_lib_versions.yml/badge.svg)](https://github.com/esp-arduino-libs/ESP32_Display_Panel/actions/workflows/check_lib_versions.yml)
 
-**Latest Arduino Library Version**: [![GitHub Release](https://img.shields.io/github/v/release/esp-arduino-libs/ESP32_Display_Panel)](https://github.com/esp-arduino-libs/ESP32_Display_Panel/releases)
+**Arduino Library Version**: [![Version](https://img.shields.io/badge/version-2.0.0-blue)](https://github.com/esp-arduino-libs/ESP32_Display_Panel/releases)
 
-**Latest Espressif Component Version**: [![Espressif Release](https://components.espressif.com/components/espressif/esp32_display_panel/badge.svg)](https://components.espressif.com/components/espressif/esp32_display_panel)
+**Espressif Component Version**: [![Version](https://img.shields.io/badge/version-2.0.0-blue)](https://components.espressif.com/components/espressif/esp32_display_panel)
 
 # ESP Display Panel
 
@@ -21,6 +21,7 @@ ESP32_Display_Panel's main features include:
 - Support for custom board configuration
 - Support for flexible driver configuration and parameters
 - Support for `ESP-IDF`, `Arduino`, and `MicroPython` development frameworks
+- I2C driver updated to ESP-IDF's `driver_ng`, enabling compatibility with the latest Arduino-ESP32 core
 
 The functional block diagram is shown below:
 
@@ -41,6 +42,9 @@ The functional block diagram is shown below:
 ## How to Use
 
 📖 Here are the usage guides for ESP32_Display_Panel in different development environments:
+
+> [!NOTE]
+> This library targets Arduino-ESP32 core versions based on ESP-IDF v5.x (I2C `driver_ng`). If you are using an older Arduino-ESP32 core that relies on the legacy I2C driver, please use an older ESP32_Display_Panel release.
 
 * [ESP-IDF](./docs/envs/use_with_idf.md)
 * [Arduino IDE](./docs/envs/use_with_arduino.md)

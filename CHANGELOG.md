@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v2.0.0 - 2026-01-02
+
+### Enhancements:
+
+* feat(i2c): migrate from legacy I2C driver to ESP-IDF I2C `driver_ng` (allows using the latest Arduino-ESP32 core)
+
 ## v1.0.5 - 2025-10-14
 
 ### Enhancements:

@@ -7,6 +7,7 @@
 #pragma once
 
 #include "driver/i2c.h"
+#include "esp_idf_version.h"
 #include "esp_panel_host.hpp"
 
 namespace esp_panel::drivers {
@@ -43,6 +44,8 @@ private:
      */
     HostI2C(int id, const i2c_config_t &config):
         Host<HostI2C, i2c_config_t, static_cast<int>(I2C_NUM_MAX)>(id, config) {}
+
+    bool owns_bus = false;
 
     /**
      * @brief Calibrate configuration when host already exists
