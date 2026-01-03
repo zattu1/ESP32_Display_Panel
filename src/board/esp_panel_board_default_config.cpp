@@ -13,6 +13,8 @@
 #include "board/esp_panel_board_private.hpp"
 #include "esp_panel_board_default_config.hpp"
 
+#include "drivers/touch/esp_panel_touch.hpp"
+
 // *INDENT-OFF*
 
 #undef _TO_STR
@@ -23,20 +25,36 @@
 using namespace esp_panel::drivers;
 using namespace esp_panel::board;
 
+#ifdef TouchConfig
+#undef TouchConfig
+#endif
+#ifdef BacklightConfig
+#undef BacklightConfig
+#endif
+#ifdef IO_ExpanderConfig
+#undef IO_ExpanderConfig
+#endif
+#ifdef LCD_Config
+#undef LCD_Config
+#endif
+
+
 #ifdef ESP_PANEL_BOARD_LCD_VENDOR_INIT_CMD
 static const esp_panel_lcd_vendor_init_cmd_t lcd_vendor_init_cmds[] = ESP_PANEL_BOARD_LCD_VENDOR_INIT_CMD();
 #endif // ESP_PANEL_BOARD_LCD_VENDOR_INIT_CMD
 
-const BoardConfig ESP_PANEL_BOARD_DEFAULT_CONFIG = {
+const BoardConfig ESP_PANEL_BOARD_DEFAULT_CONFIG = []() {
+
+    BoardConfig cfg{};
 
     /* General */
 #ifdef ESP_PANEL_BOARD_NAME
-    .name = ESP_PANEL_BOARD_NAME,
+    cfg.name = ESP_PANEL_BOARD_NAME;
 #endif
 
     /* LCD */
 #if ESP_PANEL_BOARD_USE_LCD
-    .lcd = BoardConfig::LCD_Config{
+    cfg.lcd = decltype(cfg.lcd)::value_type{
     #if ESP_PANEL_BOARD_LCD_BUS_TYPE == ESP_PANEL_BUS_TYPE_SPI
         .bus_config = BusSPI::Config{
             .host_id = ESP_PANEL_BOARD_LCD_SPI_HOST_ID,
@@ -204,12 +222,12 @@ const BoardConfig ESP_PANEL_BOARD_DEFAULT_CONFIG = {
             .gap_y = ESP_PANEL_BOARD_LCD_GAP_Y,
     #endif // ESP_PANEL_BOARD_LCD_GAP_Y
         },
-    },
+    };
 #endif // ESP_PANEL_BOARD_USE_LCD
 
     /* Touch */
 #if ESP_PANEL_BOARD_USE_TOUCH
-    .touch = BoardConfig::TouchConfig{
+    cfg.touch = decltype(cfg.touch)::value_type{
     #if ESP_PANEL_BOARD_TOUCH_BUS_TYPE == ESP_PANEL_BUS_TYPE_I2C
         .bus_config = BusI2C::Config{
             // General
@@ -226,13 +244,50 @@ const BoardConfig ESP_PANEL_BOARD_DEFAULT_CONFIG = {
         #endif // ESP_PANEL_BOARD_TOUCH_BUS_SKIP_INIT_HOST
             // Control Panel
         #if ESP_PANEL_BOARD_TOUCH_I2C_ADDRESS == 0
-            .control_panel = BusI2C::ControlPanelFullConfig
-                ESP_PANEL_TOUCH_I2C_CONTROL_PANEL_CONFIG(ESP_PANEL_BOARD_TOUCH_CONTROLLER),
+            .control_panel = []() {
+                BusI2C::ControlPanelFullConfig cfg = ESP_PANEL_TOUCH_I2C_CONTROL_PANEL_CONFIG(ESP_PANEL_BOARD_TOUCH_CONTROLLER);
+                // ESP-IDF v5.5+ validates this unconditionally:
+                //   control_phase_bytes * 8 > dc_bit_offset
+                // even if disable_control_phase is set.
+                if (cfg.control_phase_bytes == 0) {
+                    cfg.control_phase_bytes = 1;
+                }
+                const uint32_t dc_bit = static_cast<uint32_t>(cfg.dc_bit_offset);
+                const uint32_t bytes = static_cast<uint32_t>(cfg.control_phase_bytes);
+                if (bytes * 8U <= dc_bit) {
+                    const uint32_t required_bytes = (dc_bit / 8U) + 1U;
+                    if (required_bytes > 255U) {
+                        cfg.control_phase_bytes = 1;
+                        cfg.dc_bit_offset = 0;
+                    } else {
+                        cfg.control_phase_bytes = static_cast<uint8_t>(required_bytes);
+                    }
+                }
+                return cfg;
+            }(),
         #else
-            .control_panel = BusI2C::ControlPanelFullConfig
-                ESP_PANEL_TOUCH_I2C_CONTROL_PANEL_CONFIG_WITH_ADDR(
-                    ESP_PANEL_BOARD_TOUCH_CONTROLLER, ESP_PANEL_BOARD_TOUCH_I2C_ADDRESS
-                ),
+            .control_panel = []() {
+                BusI2C::ControlPanelFullConfig cfg = ESP_PANEL_TOUCH_I2C_CONTROL_PANEL_CONFIG(ESP_PANEL_BOARD_TOUCH_CONTROLLER);
+                cfg.dev_addr = ESP_PANEL_BOARD_TOUCH_I2C_ADDRESS;
+                // ESP-IDF v5.5+ validates this unconditionally:
+                //   control_phase_bytes * 8 > dc_bit_offset
+                // even if disable_control_phase is set.
+                if (cfg.control_phase_bytes == 0) {
+                    cfg.control_phase_bytes = 1;
+                }
+                const uint32_t dc_bit = static_cast<uint32_t>(cfg.dc_bit_offset);
+                const uint32_t bytes = static_cast<uint32_t>(cfg.control_phase_bytes);
+                if (bytes * 8U <= dc_bit) {
+                    const uint32_t required_bytes = (dc_bit / 8U) + 1U;
+                    if (required_bytes > 255U) {
+                        cfg.control_phase_bytes = 1;
+                        cfg.dc_bit_offset = 0;
+                    } else {
+                        cfg.control_phase_bytes = static_cast<uint8_t>(required_bytes);
+                    }
+                }
+                return cfg;
+            }(),
         #endif // ESP_PANEL_BOARD_TOUCH_I2C_ADDRESS
         },
     #elif ESP_PANEL_BOARD_TOUCH_BUS_TYPE == ESP_PANEL_BUS_TYPE_SPI
@@ -247,10 +302,7 @@ const BoardConfig ESP_PANEL_BOARD_DEFAULT_CONFIG = {
             },
         #endif // ESP_PANEL_BOARD_TOUCH_BUS_SKIP_INIT_HOST
             // Control Panel
-            .control_panel = BusSPI::ControlPanelFullConfig
-                ESP_PANEL_TOUCH_SPI_CONTROL_PANEL_CONFIG(
-                    ESP_PANEL_BOARD_TOUCH_CONTROLLER, ESP_PANEL_BOARD_TOUCH_SPI_IO_CS
-                ),
+            .control_panel = []() { BusSPI::ControlPanelFullConfig cfg = ESP_PANEL_TOUCH_SPI_CONTROL_PANEL_CONFIG(ESP_PANEL_BOARD_TOUCH_CONTROLLER, ESP_PANEL_BOARD_TOUCH_SPI_IO_CS); return cfg; }(),
         },
     #endif // ESP_PANEL_BOARD_TOUCH_BUS_TYPE
         .device_name = TO_STR(ESP_PANEL_BOARD_TOUCH_CONTROLLER),
@@ -275,12 +327,12 @@ const BoardConfig ESP_PANEL_BOARD_DEFAULT_CONFIG = {
             .mirror_y = ESP_PANEL_BOARD_TOUCH_MIRROR_Y,
     #endif // ESP_PANEL_BOARD_TOUCH_MIRROR_Y
         },
-    },
+    };
 #endif // ESP_PANEL_BOARD_USE_TOUCH
 
     /* Backlight */
 #if ESP_PANEL_BOARD_USE_BACKLIGHT
-    .backlight = BoardConfig::BacklightConfig{
+    cfg.backlight = decltype(cfg.backlight)::value_type{
     #if ESP_PANEL_BOARD_BACKLIGHT_TYPE == ESP_PANEL_BACKLIGHT_TYPE_SWITCH_GPIO
         .config = BacklightSwitchGPIO::Config{
             .io_num = ESP_PANEL_BOARD_BACKLIGHT_IO,
@@ -312,12 +364,12 @@ const BoardConfig ESP_PANEL_BOARD_DEFAULT_CONFIG = {
         .pre_process = {
             .idle_off = ESP_PANEL_BOARD_BACKLIGHT_IDLE_OFF,
         },
-    },
+    };
 #endif // ESP_PANEL_BOARD_USE_BACKLIGHT
 
     /* IO expander */
 #if ESP_PANEL_BOARD_USE_EXPANDER
-    .io_expander = BoardConfig::IO_ExpanderConfig{
+    cfg.io_expander = decltype(cfg.io_expander)::value_type{
         .name = TO_STR(ESP_PANEL_BOARD_EXPANDER_CHIP),
         .config = {
     #if !ESP_PANEL_BOARD_EXPANDER_SKIP_INIT_HOST
@@ -336,11 +388,11 @@ const BoardConfig ESP_PANEL_BOARD_DEFAULT_CONFIG = {
                 .address = ESP_PANEL_BOARD_EXPANDER_I2C_ADDRESS,
             },
         },
-    },
+    };
 #endif // ESP_PANEL_BOARD_USE_EXPANDER
 
     /* Others */
-    .stage_callbacks = {
+    cfg.stage_callbacks = {
 #ifdef ESP_PANEL_BOARD_PRE_BEGIN_FUNCTION
         [](void *p) -> bool ESP_PANEL_BOARD_PRE_BEGIN_FUNCTION(p),
 #else
@@ -401,7 +453,9 @@ const BoardConfig ESP_PANEL_BOARD_DEFAULT_CONFIG = {
 #else
         nullptr,
 #endif // ESP_PANEL_BOARD_BACKLIGHT_POST_BEGIN_FUNCTION
-    },
-};
+    };
+
+    return cfg;
+}();
 
 // *INDENT-ON*

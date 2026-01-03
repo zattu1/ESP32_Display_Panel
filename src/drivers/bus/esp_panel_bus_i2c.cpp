@@ -359,8 +359,27 @@ bool BusI2C::begin()
     if (!isHostSkipInit()) {
         bus_clk_hz = getHostFullConfig().master.clk_speed;
     }
-    if (bus_clk_hz != 0) {
-        maybe_set_scl_speed_hz(control_panel_cfg, bus_clk_hz);
+    if (bus_clk_hz == 0) {
+        bus_clk_hz = I2C_CLK_SPEED_DEFAULT;
+    }
+    maybe_set_scl_speed_hz(control_panel_cfg, bus_clk_hz);
+
+    // ESP-IDF v5.5+ validates this unconditionally:
+    //   control_phase_bytes * 8 > dc_bit_offset
+    // even if disable_control_phase is set.
+    if (control_panel_cfg.control_phase_bytes == 0) {
+        control_panel_cfg.control_phase_bytes = 1;
+    }
+    const uint32_t dc_bit = static_cast<uint32_t>(control_panel_cfg.dc_bit_offset);
+    const uint32_t current_bytes = static_cast<uint32_t>(control_panel_cfg.control_phase_bytes);
+    if (current_bytes * 8U <= dc_bit) {
+        const uint32_t required_bytes = (dc_bit / 8U) + 1U;
+        if (required_bytes > 255U) {
+            control_panel_cfg.control_phase_bytes = 1;
+            control_panel_cfg.dc_bit_offset = 0;
+        } else {
+            control_panel_cfg.control_phase_bytes = static_cast<uint8_t>(required_bytes);
+        }
     }
     ESP_UTILS_CHECK_ERROR_RETURN(
         esp_lcd_new_panel_io_i2c_v2(bus_handle, &control_panel_cfg, &control_panel),
