@@ -42,7 +42,9 @@ void BacklightPWM_LEDC::Config::convertPartialToFull()
             .gpio_num = config.io_num,
             .speed_mode = LEDC_SPEED_MODE_DEFAULT,
             .channel = LEDC_CHANNEL_0,
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(6, 0, 0)
             .intr_type = LEDC_INTR_DISABLE,
+#endif
             .timer_sel = LEDC_TIMER_NUM_DEFAULT,
             .duty = 0,
             .hpoint = 0,
@@ -105,7 +107,6 @@ void BacklightPWM_LEDC::Config::printLEDC_ChannelConfig() const
             "\n\t\t-> [gpio_num]: %d"
             "\n\t\t-> [speed_mode]: %d"
             "\n\t\t-> [channel]: %d"
-            "\n\t\t-> [intr_type]: %d"
             "\n\t\t-> [timer_sel]: %d"
             "\n\t\t-> [duty]: %d"
             "\n\t\t-> [hpoint]: %d"
@@ -114,7 +115,6 @@ void BacklightPWM_LEDC::Config::printLEDC_ChannelConfig() const
             , static_cast<int>(config.gpio_num)
             , static_cast<int>(config.speed_mode)
             , static_cast<int>(config.channel)
-            , static_cast<int>(config.intr_type)
             , static_cast<int>(config.timer_sel)
             , static_cast<int>(config.duty)
             , static_cast<int>(config.hpoint)
