@@ -1,8 +1,8 @@
 [![Arduino Lint](https://github.com/esp-arduino-libs/ESP32_Display_Panel/actions/workflows/arduino_lint.yml/badge.svg)](https://github.com/esp-arduino-libs/ESP32_Display_Panel/actions/workflows/arduino_lint.yml) [![Version Consistency](https://github.com/esp-arduino-libs/ESP32_Display_Panel/actions/workflows/check_lib_versions.yml/badge.svg)](https://github.com/esp-arduino-libs/ESP32_Display_Panel/actions/workflows/check_lib_versions.yml)
 
-**Arduino Library Version**: [![Version](https://img.shields.io/badge/version-2.0.0-blue)](https://github.com/esp-arduino-libs/ESP32_Display_Panel/releases)
+**Arduino Library Version**: [![Version](https://img.shields.io/badge/version-2.1.0-blue)](https://github.com/zattu1/ESP32_Display_Panel/releases)
 
-**Espressif Component Version**: [![Version](https://img.shields.io/badge/version-2.0.0-blue)](https://components.espressif.com/components/espressif/esp32_display_panel)
+**Espressif Component Version**: [![Version](https://img.shields.io/badge/version-2.1.0-blue)](https://github.com/zattu1/ESP32_Display_Panel/releases)
 
 # ESP Display Panel
 
@@ -21,7 +21,7 @@ ESP32_Display_Panel's main features include:
 - Support for custom board configuration
 - Support for flexible driver configuration and parameters
 - Support for `ESP-IDF`, `Arduino`, and `MicroPython` development frameworks
-- I2C driver updated to ESP-IDF's `driver_ng`, enabling compatibility with the latest Arduino-ESP32 core
+- I2C driver updated to ESP-IDF's `driver_ng`, including ESP-IDF 6.1.1 / Arduino-ESP32 4.0.0 (`esp_lcd_new_panel_io_i2c`, `gpio_num_t`)
 
 The functional block diagram is shown below:
 

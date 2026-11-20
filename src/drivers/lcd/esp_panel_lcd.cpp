@@ -8,6 +8,7 @@
 #include <memory>
 #include <numeric>
 #include "sdkconfig.h"
+#include "esp_idf_version.h"
 #include "esp_heap_caps.h"
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_panel_io.h"
@@ -110,6 +111,18 @@ void LCD::Config::convertPartialToFull()
         printDeviceConfig();
 #endif // ESP_UTILS_LOG_LEVEL_DEBUG
         auto &config = std::get<DevicePartialConfig>(device);
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+        device = DeviceFullConfig{
+            .rgb_ele_order = static_cast<lcd_rgb_element_order_t>(config.rgb_ele_order),
+            .data_endian = LCD_RGB_DATA_ENDIAN_BIG,
+            .bits_per_pixel = static_cast<uint32_t>(config.bits_per_pixel),
+            .reset_gpio_num = static_cast<gpio_num_t>(config.reset_gpio_num),
+            .vendor_config = nullptr,
+            .flags = {
+                .reset_active_high = config.flags_reset_active_high,
+            },
+        };
+#else
         device = DeviceFullConfig{
             .reset_gpio_num = config.reset_gpio_num,
             .rgb_ele_order = static_cast<lcd_rgb_element_order_t>(config.rgb_ele_order),
@@ -120,6 +133,7 @@ void LCD::Config::convertPartialToFull()
             },
             .vendor_config = nullptr,
         };
+#endif
     }
 
     if (std::holds_alternative<VendorPartialConfig>(vendor)) {

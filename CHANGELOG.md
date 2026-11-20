@@ -1,5 +1,15 @@
 # ChangeLog
 
+## v2.1.0 - 2026-11-20
+
+### Enhancements:
+
+* feat(idf): build on ESP-IDF 6.1.1 / Arduino-ESP32 4.0.0
+* feat(i2c): call `esp_lcd_new_panel_io_i2c()` on IDF 6 (v1/v2 symbols were removed; IDF 5.5–5.x still uses `esp_lcd_new_panel_io_i2c_v2()`)
+* fix(gpio): cast bus and panel pins to `gpio_num_t`
+* fix(lcd): match `esp_lcd_panel_dev_config_t` field order on IDF 6
+* fix(rgb): map `bits_per_pixel` to `in_color_format` / `out_color_format` on IDF 6
+
 ## v2.0.0 - 2026-01-02
 
 ### Enhancements:

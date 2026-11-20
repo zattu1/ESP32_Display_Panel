@@ -73,7 +73,12 @@ void BusRGB::Config::convertPartialToFull()
                 },
             },
             .data_width = static_cast<size_t>(config.data_width),
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+            .in_color_format = (config.bits_per_pixel >= 24) ? LCD_COLOR_FMT_RGB888 : LCD_COLOR_FMT_RGB565,
+            .out_color_format = (config.bits_per_pixel >= 24) ? LCD_COLOR_FMT_RGB888 : LCD_COLOR_FMT_RGB565,
+#else
             .bits_per_pixel = static_cast<size_t>(config.bits_per_pixel),
+#endif
             .num_fbs = 1,
             .bounce_buffer_size_px = static_cast<size_t>(config.bounce_buffer_size_px),
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 3, 0)
@@ -82,21 +87,21 @@ void BusRGB::Config::convertPartialToFull()
             .sram_trans_align = 4,
             .psram_trans_align = 64,
 #endif // ESP_IDF_VERSION
-            .hsync_gpio_num = config.hsync_gpio_num,
-            .vsync_gpio_num = config.vsync_gpio_num,
-            .de_gpio_num = config.de_gpio_num,
-            .pclk_gpio_num = config.pclk_gpio_num,
-            .disp_gpio_num = config.disp_gpio_num,
+            .hsync_gpio_num = static_cast<gpio_num_t>(config.hsync_gpio_num),
+            .vsync_gpio_num = static_cast<gpio_num_t>(config.vsync_gpio_num),
+            .de_gpio_num = static_cast<gpio_num_t>(config.de_gpio_num),
+            .pclk_gpio_num = static_cast<gpio_num_t>(config.pclk_gpio_num),
+            .disp_gpio_num = static_cast<gpio_num_t>(config.disp_gpio_num),
             .data_gpio_nums = {
-                config.data_gpio_nums[0], config.data_gpio_nums[1],
-                config.data_gpio_nums[2], config.data_gpio_nums[3],
-                config.data_gpio_nums[4], config.data_gpio_nums[5],
-                config.data_gpio_nums[6], config.data_gpio_nums[7],
+                static_cast<gpio_num_t>(config.data_gpio_nums[0]), static_cast<gpio_num_t>(config.data_gpio_nums[1]),
+                static_cast<gpio_num_t>(config.data_gpio_nums[2]), static_cast<gpio_num_t>(config.data_gpio_nums[3]),
+                static_cast<gpio_num_t>(config.data_gpio_nums[4]), static_cast<gpio_num_t>(config.data_gpio_nums[5]),
+                static_cast<gpio_num_t>(config.data_gpio_nums[6]), static_cast<gpio_num_t>(config.data_gpio_nums[7]),
 #if ESP_PANEL_BUS_RGB_DATA_BITS >= 16
-                config.data_gpio_nums[8], config.data_gpio_nums[9],
-                config.data_gpio_nums[10], config.data_gpio_nums[11],
-                config.data_gpio_nums[12], config.data_gpio_nums[13],
-                config.data_gpio_nums[14], config.data_gpio_nums[15],
+                static_cast<gpio_num_t>(config.data_gpio_nums[8]), static_cast<gpio_num_t>(config.data_gpio_nums[9]),
+                static_cast<gpio_num_t>(config.data_gpio_nums[10]), static_cast<gpio_num_t>(config.data_gpio_nums[11]),
+                static_cast<gpio_num_t>(config.data_gpio_nums[12]), static_cast<gpio_num_t>(config.data_gpio_nums[13]),
+                static_cast<gpio_num_t>(config.data_gpio_nums[14]), static_cast<gpio_num_t>(config.data_gpio_nums[15]),
 #endif // ESP_PANEL_BUS_RGB_DATA_BITS
             },
             .flags = {

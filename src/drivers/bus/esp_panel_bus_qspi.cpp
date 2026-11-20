@@ -44,8 +44,8 @@ void BusQSPI::Config::convertPartialToFull()
 #endif // ESP_UTILS_LOG_LEVEL_DEBUG
         auto &config = std::get<ControlPanelPartialConfig>(control_panel);
         control_panel = ControlPanelFullConfig{
-            .cs_gpio_num = config.cs_gpio_num,
-            .dc_gpio_num = -1,
+            .cs_gpio_num = static_cast<gpio_num_t>(config.cs_gpio_num),
+            .dc_gpio_num = static_cast<gpio_num_t>(-1),
             .spi_mode = config.spi_mode,
             .pclk_hz = static_cast<unsigned int>(config.pclk_hz),
             .trans_queue_depth = 10,

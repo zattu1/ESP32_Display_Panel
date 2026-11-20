@@ -18,11 +18,12 @@
 // Arduino-ESP32 driver_ng I2C HAL symbol to obtain the created bus handle
 extern "C" void *i2cBusHandle(uint8_t i2c_num);
 
-// Use ESP-IDF's v2 I2C panel IO (driver_ng). This avoids pulling in the v1 (legacy) implementation.
+// ESP-IDF 5.5–5.x names the driver_ng panel IO `esp_lcd_new_panel_io_i2c_v2`.
+// ESP-IDF 6 dropped the v1/v2 symbols; the same new-bus call is `esp_lcd_new_panel_io_i2c`.
 #ifdef __cplusplus
 extern "C" {
 #endif
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0) && ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(6, 0, 0)
 esp_err_t esp_lcd_new_panel_io_i2c_v2(i2c_master_bus_handle_t bus,
                                      const esp_lcd_panel_io_i2c_config_t *io_config,
                                      esp_lcd_panel_io_handle_t *ret_io);
@@ -61,8 +62,8 @@ void BusI2C::Config::convertPartialToFull()
         auto &config = std::get<HostPartialConfig>(host.value());
         host = i2c_config_t{
             .mode = I2C_MODE_MASTER,
-            .sda_io_num = config.sda_io_num,
-            .scl_io_num = config.scl_io_num,
+            .sda_io_num = static_cast<gpio_num_t>(config.sda_io_num),
+            .scl_io_num = static_cast<gpio_num_t>(config.scl_io_num),
             .sda_pullup_en = config.sda_pullup_en,
             .scl_pullup_en = config.scl_pullup_en,
             .master = {
@@ -381,10 +382,17 @@ bool BusI2C::begin()
             control_panel_cfg.control_phase_bytes = static_cast<uint8_t>(required_bytes);
         }
     }
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
+    ESP_UTILS_CHECK_ERROR_RETURN(
+        esp_lcd_new_panel_io_i2c(bus_handle, &control_panel_cfg, &control_panel),
+        false, "create control panel failed"
+    );
+#else
     ESP_UTILS_CHECK_ERROR_RETURN(
         esp_lcd_new_panel_io_i2c_v2(bus_handle, &control_panel_cfg, &control_panel),
         false, "create control panel failed"
     );
+#endif
 #else
     // Older IDF/Arduino cores don't provide the v2 API; use the standard esp_lcd_new_panel_io_i2c().
     ESP_UTILS_CHECK_ERROR_RETURN(
