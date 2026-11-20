@@ -9,7 +9,11 @@
 #include <optional>
 #include <memory>
 #include <variant>
+#if __has_include("driver/i2c_types_legacy.h")
+#include "driver/i2c_types_legacy.h"
+#else
 #include "driver/i2c.h"
+#endif
 #include "esp_panel_types.h"
 #include "utils/esp_panel_utils_cxx.hpp"
 #include "esp_panel_bus_conf_internal.h"

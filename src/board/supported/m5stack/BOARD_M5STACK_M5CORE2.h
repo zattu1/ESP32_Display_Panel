@@ -12,6 +12,13 @@
 
 #pragma once
 
+#include "sdkconfig.h"
+#ifndef CONFIG_I2C_SUPPRESS_DEPRECATE_WARN
+#define CONFIG_I2C_SUPPRESS_DEPRECATE_WARN 1
+#endif
+#include "driver/i2c.h"
+
+
 // *INDENT-OFF*
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

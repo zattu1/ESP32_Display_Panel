@@ -6,7 +6,11 @@
 
 #pragma once
 
+#if __has_include("driver/i2c_types_legacy.h")
+#include "driver/i2c_types_legacy.h"
+#else
 #include "driver/i2c.h"
+#endif
 #include "esp_idf_version.h"
 #include "esp_panel_host.hpp"
 
